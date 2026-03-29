@@ -22,12 +22,12 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Alex/Desktop/lib/commons-codec-1.21.0.jar">
+	<classpathentry exported="true" kind="lib" path="C:/Users/Alex/Desktop/lib/commons-codec-1.21.0.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/Alex/Desktop/lib/commons-io-2.21.0.jar">
+	<classpathentry exported="true" kind="lib" path="C:/Users/Alex/Desktop/lib/commons-io-2.21.0.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
