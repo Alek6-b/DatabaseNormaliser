@@ -1,0 +1,35 @@
+Manifest-Version: 1.0
+Created-By: Apache Maven Bundle Plugin 6.0.0
+Build-Jdk-Spec: 21
+Specification-Title: Apache Commons CSV
+Specification-Version: 1.14
+Specification-Vendor: The Apache Software Foundation
+Implementation-Title: Apache Commons CSV
+Implementation-Version: 1.14.1
+Implementation-Vendor: The Apache Software Foundation
+Automatic-Module-Name: org.apache.commons.csv
+Bundle-Description: The Apache Commons CSV library provides a simple int
+ erface for reading and writing CSV files of various types.
+Bundle-DocURL: https://commons.apache.org/proper/commons-csv/
+Bundle-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+Bundle-ManifestVersion: 2
+Bundle-Name: Apache Commons CSV
+Bundle-SymbolicName: org.apache.commons.commons-csv
+Bundle-Vendor: The Apache Software Foundation
+Bundle-Version: 1.14.1
+Export-Package: org.apache.commons.csv;version="1.14.1";uses:="org.apach
+ e.commons.io.build"
+Import-Package: org.apache.commons.codec.binary;version="1.19.0",org.apa
+ che.commons.io;version="2.20.0",org.apache.commons.io.build;version="2.
+ 20.0",org.apache.commons.io.function;version="2.20.0",org.apache.common
+ s.io.input;version="2.20.0",org.apache.commons.io.output;version="2.20.
+ 0",java.io,java.lang,java.lang.invoke,java.net,java.nio,java.nio.charse
+ t,java.nio.file,java.sql,java.util,java.util.concurrent.locks,java.util
+ .function,java.util.stream
+Include-Resource: META-INF/LICENSE.txt=LICENSE.txt,META-INF/NOTICE.txt=N
+ OTICE.txt
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Tool: Bnd-7.1.0.202411251545
+Multi-Release: true
+Require-Bundle: junit-jupiter-params;bundle-version="[5.14.0,6.0.0)"
+
