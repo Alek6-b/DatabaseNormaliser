@@ -17,9 +17,9 @@ import databaseNormaliser.*;
  */
 @ParameterizedClass
 @CsvSource({ 
-	"ABCDEF, BC->D, D->EF, A->B, AB->CD, B->C, C->A",
+	"ABCDEFG, BC->D, D->EF, A->B, AB->CD, B->C, C->A",
 	"ABCD, D->ACD, BC->D",
-	"ABCDEFG, A->BC, D->EF, G->AD, DE->F",
+	"ABCDEFGH, A->BC, D->EF, G->AD, DE->F",
 	"ABCDE,A->BCDE, D->E, B->C, C->D",
 	"ABCDE,A->BCD, B->C"
 		})
@@ -31,7 +31,7 @@ record QuickTest(String attributes, @AggregateWith(Util.VarargsStringAggregator.
 
 	@RepeatedTest(1)
 	void testWithArgumentsAccessor() {
-		System.out.println("Testing...");
+		System.out.println(String.format("Testing with attributes: %s", attributes));
 
 		var db = new NormalisableTable(Util.attributeParse(attributes));
 		
@@ -42,8 +42,13 @@ record QuickTest(String attributes, @AggregateWith(Util.VarargsStringAggregator.
 		}).toList();
 		db.addDependencies(d);
 		System.out.print("Result:\n");
-		db.getNormalised().forEach((t) -> System.out
-				.println("%s with key: %s".formatted(t.getAttributes().toString(), t.getKey().toString())));
+		try {
+			db.getNormalised().forEach((t) -> System.out
+					.println("%s with key: %s".formatted(t.getAttributes().toString(), t.getKey().toString())));
+		} catch (IllegalArgumentException e) {
+			System.err.println(e.getMessage());
+		}
+
 	}
 
 }

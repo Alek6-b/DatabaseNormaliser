@@ -21,8 +21,8 @@ class CSVTest {
 	@Test
 	void test() throws FileNotFoundException, IOException {
 		File csv, dep;
-		csv = new File("src/test/resources/coke.csv");
-		dep = new File("src/test/resources/coke_results.txt");
+		csv = new File("src/test/resources/student.csv");
+		dep = new File("src/test/resources/student_results.txt");
 		CSVParser p = CSVParser.parse(new BufferedReader(new InputStreamReader(new FileInputStream(csv))), CSVFormat.DEFAULT.builder().setDelimiter(getDelimiter(csv)).setHeader()
 				.setSkipHeaderRecord(true).setCommentMarker('#').get());
 		NormalisableTable db = new NormalisableTable(p.getHeaderNames());
