@@ -6,23 +6,10 @@ import java.util.Collection;
 import java.util.List;
 
 public class NormalisableTable extends Table implements Normalisable {
-	private DependencyNormaliser dependencies;
-
 	private List<Table> normalForm = null;
 
 	public NormalisableTable(Collection<String> attributes) {
 		super(attributes);
-		dependencies = new DependencyNormaliser(attributes);
-	}
-
-	public void addDependency(Dependency d) {
-		normalForm = null;
-		dependencies.add(d);
-	}
-
-	public void addDependencies(Collection<Dependency> d) {
-		normalForm = null;
-		dependencies.addAll(d);
 	}
 
 	/**
@@ -34,10 +21,10 @@ public class NormalisableTable extends Table implements Normalisable {
 	 * @throws MissingDependencyException
 	 * @throws InterruptedException
 	 */
-	public List<Table> getNormalised() {
+	public List<Table> getNormalised(Collection<Dependency> d) {
 		if (normalForm == null) {
 			try {
-				normalise();
+				normalise(d);
 			} catch (InterruptedException e) {
 				return null;
 			}
@@ -54,16 +41,8 @@ public class NormalisableTable extends Table implements Normalisable {
 	 * @throws MissingDependencyException
 	 * 
 	 */
-	private void normalise() throws InterruptedException {
-		List<String> nullable = new ArrayList<String>();
-		for (List<Serializable> l : this.entries) {
-			for (Serializable s : l) {
-				if (s.toString().trim().contentEquals("")|| s.toString().trim().toLowerCase().contentEquals("null"))
-					nullable.add(attributes.get(l.indexOf(s)));
-			}
-		}
-		dependencies.setBlacklist(nullable);
-		normalForm = dependencies.normalise();
+	private void normalise(Collection<Dependency> d) throws InterruptedException {
+		normalForm = new NormaliserFactory().normalise(d, attributes);
 		fillTables(normalForm);
 	}
 
@@ -76,10 +55,5 @@ public class NormalisableTable extends Table implements Normalisable {
 			});
 		});
 
-	}
-
-	@Override
-	public List<Dependency> getDependencies() {
-		return dependencies.getAll();
 	}
 }
