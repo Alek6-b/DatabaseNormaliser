@@ -21,7 +21,7 @@ public class NormalisableTable extends Table implements Normalisable {
 	 * @throws MissingDependencyException
 	 * @throws InterruptedException
 	 */
-	public List<Table> getNormalised(Collection<Dependency> d) {
+	public List<Table> getNormalised(Collection<FunctionalDependency> d) {
 		if (normalForm == null) {
 			try {
 				normalise(d);
@@ -41,7 +41,7 @@ public class NormalisableTable extends Table implements Normalisable {
 	 * @throws MissingDependencyException
 	 * 
 	 */
-	private void normalise(Collection<Dependency> d) throws InterruptedException {
+	private void normalise(Collection<FunctionalDependency> d) throws InterruptedException {
 		normalForm = new NormaliserFactory().normalise(d, attributes);
 		fillTables(normalForm);
 	}

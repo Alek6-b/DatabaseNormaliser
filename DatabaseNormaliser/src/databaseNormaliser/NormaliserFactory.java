@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class NormaliserFactory {
-	public List<Table> normalise(Collection<Dependency> dependencies,
+	public List<Table> normalise(Collection<FunctionalDependency> dependencies,
 			Collection<String> attributes) throws InterruptedException {
-		return AttributeCenteredNormaliser.normalise(dependencies, attributes);
+		return AttributeKeyNormaliser.normalise(dependencies, attributes);
 	}
 }

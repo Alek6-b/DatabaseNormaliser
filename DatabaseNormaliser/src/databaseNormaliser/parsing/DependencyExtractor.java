@@ -32,7 +32,7 @@ public class DependencyExtractor {
 				b.reset();
 				return extractFromMetanome(b);
 			}
-			throw new IllegalArgumentException("Dependency File Not Recognized.");
+			throw new IllegalArgumentException("FunctionalDependency File Not Recognized.");
 		}
 	}
 	

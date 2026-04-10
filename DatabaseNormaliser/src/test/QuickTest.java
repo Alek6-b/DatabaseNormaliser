@@ -33,10 +33,10 @@ record QuickTest(String attributes,
 
 		var db = new NormalisableTable(Util.attributeParse(attributes));
 
-		List<Dependency> d = Arrays.stream(dependencies).map((s) -> {
+		List<FunctionalDependency> d = Arrays.stream(dependencies).map((s) -> {
 			System.out.print("Adding dependency:" + s + "\n");
 			String[] tmp = s.split("->");
-			return new Dependency(Util.attributeParse(tmp[0]),
+			return new FunctionalDependency(Util.attributeParse(tmp[0]),
 					Util.attributeParse(tmp[1]));
 		}).toList();
 		System.out.print("Result:\n");

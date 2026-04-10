@@ -9,7 +9,7 @@ import org.apache.commons.csv.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import databaseNormaliser.Dependency;
+import databaseNormaliser.FunctionalDependency;
 import databaseNormaliser.NormalisableTable;
 import databaseNormaliser.parsing.DelimiterExtractor;
 import databaseNormaliser.parsing.DependencyExtractor;
@@ -35,7 +35,7 @@ class CSVTest {
 		for (CSVRecord i : p.getRecords()) {
 			db.addEntry(i.toList());
 		}
-		db.getNormalised(Dependency.parse(
+		db.getNormalised(FunctionalDependency.parse(
 				DependencyExtractor.extract(new FileInputStream(depFile))))
 				.forEach((t) -> System.out.println("%s with key: %s".formatted(
 						t.getAttributes().toString(), t.getKey().toString())));

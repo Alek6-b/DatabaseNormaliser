@@ -15,25 +15,25 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class AttributeCenteredNormaliser {
-	public static List<Table> normalise(Collection<Dependency> dependencies,
+public class AttributeKeyNormaliser {
+	public static List<Table> normalise(Collection<FunctionalDependency> dependencies,
 			Collection<String> attributes) throws InterruptedException {
 		return normalise(dependencies, attributes, null);
 	}
 
-	public static List<Table> normalise(Collection<Dependency> dependencies,
+	public static List<Table> normalise(Collection<FunctionalDependency> dependencies,
 			Collection<String> attributes, Collection<String> tableKey)
 			throws InterruptedException {
 
 		Set<String> mainKey = (tableKey != null)
 				? Collections.unmodifiableSet(new LinkedHashSet<>(tableKey))
-				: guessKey(dependencies, attributes);
+				: guessMainKey(dependencies, attributes);
 
 		Map<String, Set<String>> attributeKeyMap = new ConcurrentHashMap<>();
 		attributes.forEach(a -> attributeKeyMap.put(a, mainKey));
 
 		ExecutorService exe = Executors.newCachedThreadPool();
-		var dependencyMap = Dependency.mapOf(dependencies);
+		var dependencyMap = FunctionalDependency.mapOf(dependencies);
 		attributes.forEach(attribute -> exe.execute(
 				() -> computeKey(attribute, dependencyMap, attributeKeyMap)));
 		exe.shutdown();
@@ -42,30 +42,33 @@ public class AttributeCenteredNormaliser {
 		return buildTables(attributeKeyMap);
 	}
 
+	/**
+	 * Generates a collection of tables from the attributeKeyMap. Once the map
+	 * is computed, it contains a non-transitive, non-partial key for each
+	 * attribute. Given that, a normal form is created by grouping each
+	 * attribute with its assigned key.
+	 * 
+	 * @param attributeKeyMap
+	 * @return
+	 */
 	private static List<Table> buildTables(
 			Map<String, Set<String>> attributeKeyMap) {
 
 		Map<Set<String>, Set<String>> finalMap = new HashMap<>();
-		attributeKeyMap.forEach((attribute, k) -> {
+		attributeKeyMap.forEach((attribute, key) -> {
 			var v = new LinkedHashSet<>(Collections.singleton(attribute));
-			v.removeAll(k);
-			finalMap.merge(k, v, (a, b) -> {
+			v.removeAll(key);
+			finalMap.merge(key, v, (a, b) -> {
 				a.addAll(b);
 				return a;
 			});
 		});
 
 		List<Table> normalForm = new ArrayList<>();
-		List<String> toAdd = new ArrayList<>(attributeKeyMap.keySet());
-
 		finalMap.forEach((k, v) -> {
-			List<String> secondary = new ArrayList<>(v);
-			secondary.retainAll(toAdd);
-			toAdd.removeAll(secondary);
-
 			List<String> tableAttributes = new ArrayList<>(k);
-			tableAttributes.addAll(secondary);
-			if (!normalForm.stream().anyMatch(
+			tableAttributes.addAll(v);
+			if (normalForm.stream().noneMatch(
 					t -> t.getAttributes().containsAll(tableAttributes)))
 				normalForm.add(new Table(tableAttributes, k));
 		});
@@ -113,7 +116,7 @@ public class AttributeCenteredNormaliser {
 	 *
 	 * @return
 	 */
-	private static Set<String> cover(Collection<Dependency> dependencies,
+	private static Set<String> cover(Collection<FunctionalDependency> dependencies,
 			Collection<String> key) {
 		Set<String> out = new HashSet<>();
 		Set<String> tmp = new HashSet<>(key);
@@ -132,7 +135,7 @@ public class AttributeCenteredNormaliser {
 	 *
 	 * @return
 	 */
-	private static Set<String> guessKey(Collection<Dependency> dependencies,
+	private static Set<String> guessMainKey(Collection<FunctionalDependency> dependencies,
 			Collection<String> attributes) {
 		var key = new ConcurrentSkipListSet<>(attributes);
 		for (String s : key)
@@ -143,9 +146,11 @@ public class AttributeCenteredNormaliser {
 	}
 
 	/**
-	 * Returns a collection that contains the set difference between the other two collections.
+	 * Returns a collection that contains the set difference between the other
+	 * two collections.
 	 * 
-	 * @param <T> The type of Object within the Collections.
+	 * @param <T>
+	 *            The type of Object within the Collections.
 	 * @return
 	 */
 	private static <T> Collection<T> setDiff(Collection<T> a, Collection<T> b) {

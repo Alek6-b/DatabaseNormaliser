@@ -3,5 +3,5 @@ package databaseNormaliser;
 import java.util.Collection;
 
 public interface Normalisable {
-	Collection<Table> getNormalised(Collection<Dependency> dependencies);
+	Collection<Table> getNormalised(Collection<FunctionalDependency> dependencies);
 }
