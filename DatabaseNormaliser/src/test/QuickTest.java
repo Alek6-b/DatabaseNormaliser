@@ -31,7 +31,7 @@ record QuickTest(String attributes,
 		System.out.println(
 				String.format("Testing with attributes: %s", attributes));
 
-		var db = new NormalisableTable(Util.attributeParse(attributes));
+		var db = new Table(Util.attributeParse(attributes));
 
 		List<FunctionalDependency> d = Arrays.stream(dependencies).map((s) -> {
 			System.out.print("Adding dependency:" + s + "\n");
@@ -41,7 +41,7 @@ record QuickTest(String attributes,
 		}).toList();
 		System.out.print("Result:\n");
 		try {
-			db.getNormalised(d)
+			new AttributeKeyNormaliser(db,d).normalise()
 					.forEach((t) -> System.out.println("%s with key: %s"
 							.formatted(t.getAttributes().toString(),
 									t.getKey().toString())));

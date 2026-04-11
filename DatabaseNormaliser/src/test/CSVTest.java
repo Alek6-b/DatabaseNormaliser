@@ -4,13 +4,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.csv.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import databaseNormaliser.AttributeKeyNormaliser;
 import databaseNormaliser.FunctionalDependency;
-import databaseNormaliser.NormalisableTable;
+import databaseNormaliser.Table;
 import databaseNormaliser.parsing.DelimiterExtractor;
 import databaseNormaliser.parsing.DependencyExtractor;
 
@@ -31,12 +33,14 @@ class CSVTest {
 						DelimiterExtractor.get(new FileInputStream(csvFile)))
 				.setHeader().setSkipHeaderRecord(true).setCommentMarker('#')
 				.get());
-		NormalisableTable db = new NormalisableTable(p.getHeaderNames());
+		var db = new Table(p.getHeaderNames());
 		for (CSVRecord i : p.getRecords()) {
 			db.addEntry(i.toList());
 		}
-		db.getNormalised(FunctionalDependency.parse(
-				DependencyExtractor.extract(new FileInputStream(depFile))))
+		List<FunctionalDependency> deps = FunctionalDependency.parse(
+				DependencyExtractor.extract(new FileInputStream(depFile)));
+
+		new AttributeKeyNormaliser(db, deps).normalise()
 				.forEach((t) -> System.out.println("%s with key: %s".formatted(
 						t.getAttributes().toString(), t.getKey().toString())));
 	}

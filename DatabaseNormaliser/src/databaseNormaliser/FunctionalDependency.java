@@ -72,8 +72,8 @@ public record FunctionalDependency(Set<String> determiner, Set<String> dependent
 	 * @param dependencyMap
 	 * @return
 	 */
-	public static Collection<FunctionalDependency> parse(Map<Set<String>, Set<String>> dependencyMap) {
-		Collection<FunctionalDependency> out = new ArrayList<>(
+	public static List<FunctionalDependency> parse(Map<Set<String>, Set<String>> dependencyMap) {
+		List<FunctionalDependency> out = new ArrayList<>(
 				dependencyMap.size());
 		dependencyMap.forEach((k, v) -> out.add(new FunctionalDependency(k, v)));
 		return out;
@@ -91,6 +91,11 @@ public record FunctionalDependency(Set<String> determiner, Set<String> dependent
 			Collection<FunctionalDependency> dependencies) {
 		return mapOf(dependencies).entrySet().stream()
 				.map(e -> new FunctionalDependency(e.getKey(), e.getValue())).toList();
+	}
+	
+
+	public static List<FunctionalDependency> compress(FunctionalDependency... dependencies) {
+		return compress(List.of(dependencies));
 	}
 
 	/**
@@ -110,7 +115,4 @@ public record FunctionalDependency(Set<String> determiner, Set<String> dependent
 						}));
 	}
 
-	public static List<FunctionalDependency> compress(FunctionalDependency... dependencies) {
-		return compress(List.of(dependencies));
-	}
 }

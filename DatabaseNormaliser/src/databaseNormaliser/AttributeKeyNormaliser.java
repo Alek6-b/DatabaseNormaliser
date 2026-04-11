@@ -15,30 +15,35 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-public class AttributeKeyNormaliser {
-	public static List<Table> normalise(Collection<FunctionalDependency> dependencies,
-			Collection<String> attributes) throws InterruptedException {
-		return normalise(dependencies, attributes, null);
+public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
+
+	private List<FunctionalDependency> dependencies = null;
+	private Set<String> tableKey;
+	private Map<Set<String>, Set<String>> dependencyMap;
+
+	public AttributeKeyNormaliser(Table table,
+			List<FunctionalDependency> dependencies) {
+		this.table = table;
+		this.dependencies = dependencies;
+		this.dependencyMap = FunctionalDependency.mapOf(dependencies);
 	}
 
-	public static List<Table> normalise(Collection<FunctionalDependency> dependencies,
-			Collection<String> attributes, Collection<String> tableKey)
-			throws InterruptedException {
-
-		Set<String> mainKey = (tableKey != null)
-				? Collections.unmodifiableSet(new LinkedHashSet<>(tableKey))
-				: guessMainKey(dependencies, attributes);
+	public List<Table> normalise() {
+		tableKey = (table.getKey() != null) ? table.getKey() : guessMainKey();
 
 		Map<String, Set<String>> attributeKeyMap = new ConcurrentHashMap<>();
-		attributes.forEach(a -> attributeKeyMap.put(a, mainKey));
+		table.getAttributes().forEach(a -> attributeKeyMap.put(a, tableKey));
 
 		ExecutorService exe = Executors.newCachedThreadPool();
-		var dependencyMap = FunctionalDependency.mapOf(dependencies);
-		attributes.forEach(attribute -> exe.execute(
-				() -> computeKey(attribute, dependencyMap, attributeKeyMap)));
+		table.getAttributes().forEach(attribute -> exe
+				.execute(() -> computeKey(attribute, attributeKeyMap)));
 		exe.shutdown();
-		exe.awaitTermination(1, TimeUnit.MINUTES);
-
+		try {
+			exe.awaitTermination(2, TimeUnit.MINUTES);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return null;
+		}
 		return buildTables(attributeKeyMap);
 	}
 
@@ -51,8 +56,7 @@ public class AttributeKeyNormaliser {
 	 * @param attributeKeyMap
 	 * @return
 	 */
-	private static List<Table> buildTables(
-			Map<String, Set<String>> attributeKeyMap) {
+	private List<Table> buildTables(Map<String, Set<String>> attributeKeyMap) {
 
 		Map<Set<String>, Set<String>> finalMap = new HashMap<>();
 		attributeKeyMap.forEach((attribute, key) -> {
@@ -72,6 +76,7 @@ public class AttributeKeyNormaliser {
 					t -> t.getAttributes().containsAll(tableAttributes)))
 				normalForm.add(new Table(tableAttributes, k));
 		});
+		this.table.fill(normalForm);
 		return normalForm;
 	}
 
@@ -83,8 +88,7 @@ public class AttributeKeyNormaliser {
 	 * @param dependencyMap
 	 * @param attributeKeyMap
 	 */
-	private static void computeKey(String attribute,
-			Map<Set<String>, Set<String>> dependencyMap,
+	private void computeKey(String attribute,
 			Map<String, Set<String>> attributeKeyMap) {
 		// List of all determiners which may determine the given attribute.
 		List<Set<String>> checklist = new ArrayList<>(dependencyMap.entrySet()
@@ -116,8 +120,7 @@ public class AttributeKeyNormaliser {
 	 *
 	 * @return
 	 */
-	private static Set<String> cover(Collection<FunctionalDependency> dependencies,
-			Collection<String> key) {
+	private Set<String> cover(Collection<String> key) {
 		Set<String> out = new HashSet<>();
 		Set<String> tmp = new HashSet<>(key);
 		do {
@@ -135,19 +138,17 @@ public class AttributeKeyNormaliser {
 	 *
 	 * @return
 	 */
-	private static Set<String> guessMainKey(Collection<FunctionalDependency> dependencies,
-			Collection<String> attributes) {
-		var key = new ConcurrentSkipListSet<>(attributes);
+	private Set<String> guessMainKey() {
+		var key = new ConcurrentSkipListSet<>(table.getAttributes());
 		for (String s : key)
-			if (cover(dependencies, setDiff(key, List.of(s)))
-					.containsAll(attributes))
+			if (cover(setDiff(key, List.of(s))).containsAll(table.getAttributes()))
 				key.remove(s);
 		return key;
 	}
 
 	/**
-	 * Returns a collection that contains the set difference between the other
-	 * two collections.
+	 * A utility function that returns a collection that contains the set
+	 * difference between the other two collections.
 	 * 
 	 * @param <T>
 	 *            The type of Object within the Collections.
