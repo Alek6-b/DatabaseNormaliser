@@ -25,6 +25,10 @@ public record FunctionalDependency(Set<String> determiner, Set<String> dependent
 		this(new LinkedHashSet<>(key), new LinkedHashSet<>(value));
 	}
 
+	public String toString() {
+		return String.join(", ", determiner) + "-> " +String.join(", ", dependents);
+	}
+	
 	private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".+->.+");
 
 	/**
