@@ -26,7 +26,7 @@ public record FunctionalDependency(Set<String> determiner, Set<String> dependent
 	}
 
 	public String toString() {
-		return String.join(", ", determiner) + "-> " +String.join(", ", dependents);
+		return String.join(", ", determiner) + " -> " +String.join(", ", dependents);
 	}
 	
 	private static final Pattern DEPENDENCY_PATTERN = Pattern.compile(".+->.+");
