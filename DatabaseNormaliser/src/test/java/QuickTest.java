@@ -1,14 +1,13 @@
 /**
  * 
  */
-package test;
-
 import java.util.*;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.aggregator.AggregateWith;
 import org.junit.jupiter.params.provider.CsvSource;
 import databaseNormaliser.*;
+
 
 /**
  * A simple test class that takes CSV strings as inputs, where each letter

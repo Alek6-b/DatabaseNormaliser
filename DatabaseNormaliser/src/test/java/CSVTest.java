@@ -1,4 +1,3 @@
-package test;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -7,14 +6,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.csv.*;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import databaseNormaliser.AttributeKeyNormaliser;
-import databaseNormaliser.FunctionalDependency;
-import databaseNormaliser.Table;
-import databaseNormaliser.parsing.DelimiterExtractor;
-import databaseNormaliser.parsing.DependencyExtractor;
+import databaseNormaliser.parsing.*;
+import databaseNormaliser.*;
 
 class CSVTest {
 	final String TEST_RESOURCE_PATH = "src/test/resources/";

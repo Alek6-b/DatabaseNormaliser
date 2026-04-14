@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public record FunctionalDependency(Set<String> determiner, Set<String> dependents) {
-
 	public FunctionalDependency(Set<String> determiner, Set<String> dependents) {
 		this.determiner = Collections
 				.unmodifiableSet(new LinkedHashSet<>(determiner));
