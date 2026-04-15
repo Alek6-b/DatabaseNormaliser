@@ -1,4 +1,6 @@
-package databaseNormaliser;
+package it.unisa.databaseNormaliser;
+
+
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -6,12 +6,12 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.csv.*;
-import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.*;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import databaseNormaliser.parsing.*;
-import databaseNormaliser.*;
+import it.unisa.databaseNormaliser.*;
+import it.unisa.databaseNormaliser.parsing.*;
+
 
 class CSVTest {
 	final String TEST_RESOURCE_PATH = "src/test/resources/";

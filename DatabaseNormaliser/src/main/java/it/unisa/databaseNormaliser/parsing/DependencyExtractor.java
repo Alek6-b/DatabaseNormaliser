@@ -1,4 +1,4 @@
-package databaseNormaliser.parsing;
+package it.unisa.databaseNormaliser.parsing;
 
 import java.io.BufferedReader;
 import java.io.IOException;
