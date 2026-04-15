@@ -118,24 +118,6 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 	}
 
 	/**
-	 * Computes the cover of a key.
-	 *
-	 * @return
-	 */
-	private Set<String> cover(Collection<String> key) {
-		Set<String> out = new HashSet<>();
-		Set<String> tmp = new HashSet<>(key);
-		do {
-			out.addAll(tmp);
-			dependencies.forEach(d -> {
-				if (out.containsAll(d.determiner()))
-					tmp.addAll(d.dependents());
-			});
-		} while (!out.containsAll(tmp));
-		return out;
-	}
-
-	/**
 	 * Computes a suitable candidate key for the initial table.
 	 *
 	 * @return
@@ -143,7 +125,7 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 	private Set<String> guessMainKey() {
 		var key = new ConcurrentSkipListSet<>(table.getAttributes());
 		for (String s : key)
-			if (cover(setDiff(key, List.of(s))).containsAll(table.getAttributes()))
+			if (FunctionalDependency.cover(dependencies,setDiff(key, List.of(s))).containsAll(table.getAttributes()))
 				key.remove(s);
 		return key;
 	}

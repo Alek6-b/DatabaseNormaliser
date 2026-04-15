@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -118,6 +119,27 @@ public record FunctionalDependency(Set<String> determiner, Set<String> dependent
 							a.addAll(b);
 							return a;
 						}));
+	}
+	
+	
+	/**
+	 * Computes the cover of a given key within a set of dependencies.
+	 * 
+	 * @param dependencies
+	 * @param key
+	 * @return
+	 */
+	public static Set<String> cover(Collection<FunctionalDependency> dependencies, Collection<String> key) {
+		Set<String> out = new HashSet<>();
+		Set<String> tmp = new HashSet<>(key);
+		do {
+			out.addAll(tmp);
+			dependencies.forEach(d -> {
+				if (out.containsAll(d.determiner()))
+					tmp.addAll(d.dependents());
+			});
+		} while (!out.containsAll(tmp));
+		return out;
 	}
 
 }
