@@ -123,13 +123,13 @@ public record FunctionalDependency(Set<String> determiner, Set<String> dependent
 	
 	
 	/**
-	 * Computes the cover of a given key within a set of dependencies.
+	 * Computes the closure of a given key within a set of dependencies.
 	 * 
 	 * @param dependencies
 	 * @param key
 	 * @return
 	 */
-	public static Set<String> cover(Collection<FunctionalDependency> dependencies, Collection<String> key) {
+	public static Set<String> closure(Collection<FunctionalDependency> dependencies, Collection<String> key) {
 		Set<String> out = new HashSet<>();
 		Set<String> tmp = new HashSet<>(key);
 		do {
@@ -140,6 +140,19 @@ public record FunctionalDependency(Set<String> determiner, Set<String> dependent
 			});
 		} while (!out.containsAll(tmp));
 		return out;
+	}
+	
+	public static Map<Set<String>, Set<String>> closureMap(Collection<FunctionalDependency> dependencies){
+		var map = mapOf(dependencies);
+		map.entrySet().forEach((e) -> e.getValue().addAll(closure(dependencies, e.getKey())));
+		return map;
+	}
+	
+	public static boolean checkValid(Collection<FunctionalDependency> dependencies, Collection<String> attributes) {
+		for (FunctionalDependency d : dependencies)
+			if (!attributes.containsAll(d.dependents)||!attributes.containsAll(d.determiner))
+				return false;
+		return true;
 	}
 
 }

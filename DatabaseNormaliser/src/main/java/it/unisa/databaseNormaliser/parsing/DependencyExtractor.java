@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /**	Utility class which extracts dependency strings from an input stream associated with a file. 
  * 
  */
-public class DependencyExtractor {
+public abstract class DependencyExtractor {
 	private static final Pattern METANOME_ID_PATTERN = Pattern.compile("\\d+\\.(\\w*)\\s+(\\d+)");
 	private static final Pattern NUMBERS = Pattern.compile("\\d+");
 	private static final Pattern RFD_FILTER = Pattern.compile("TEST\\.|@\\d\\.\\d|,(?=\\s*->)|\\s*DIPENDENZA CHIAVE.*");
@@ -36,7 +36,7 @@ public class DependencyExtractor {
 		}
 	}
 	
-	public static List<String> extractFromMetanome(BufferedReader b) throws IOException {
+	private static List<String> extractFromMetanome(BufferedReader b) throws IOException {
 		List<String> out = new LinkedList<String>();
 		Map<String, String> idMap = new TreeMap<String,String>();
 		
@@ -61,7 +61,7 @@ public class DependencyExtractor {
 		return out;
 	}
 	
-	public static List<String> extractFromRFD(BufferedReader b) throws IOException {
+	private static List<String> extractFromRFD(BufferedReader b) throws IOException {
 		return b.lines().skip(1).map((line) -> RFD_FILTER.matcher(line).replaceAll("")).toList();
 	}
 }

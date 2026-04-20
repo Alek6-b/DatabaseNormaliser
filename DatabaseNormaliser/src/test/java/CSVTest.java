@@ -39,7 +39,7 @@ class CSVTest {
 
 		new AttributeKeyNormaliser(db, deps).normalise()
 				.forEach((t) -> System.out.println("%s with key: %s".formatted(
-						t.getAttributes().toString(), t.getKey().toString())));
+						t.attributes().toString(), t.key().toString())));
 	}
 
 }

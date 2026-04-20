@@ -1,7 +1,5 @@
 package it.unisa.databaseNormaliser;
 
-
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,29 +14,32 @@ import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 
 	private List<FunctionalDependency> dependencies = null;
-	private Set<String> tableKey;
-	private Map<Set<String>, Set<String>> dependencyMap;
+	private Set<String> key;
 
-	public AttributeKeyNormaliser(Table table,
-			List<FunctionalDependency> dependencies) {
+	public AttributeKeyNormaliser(Table table, List<FunctionalDependency> dependencies) {
 		this.table = table;
-		this.dependencies = dependencies;
-		this.dependencyMap = FunctionalDependency.mapOf(dependencies);
+		this.dependencies = new ArrayList<>(dependencies);
 	}
 
 	public List<Table> normalise() {
-		tableKey = (table.getKey() != null) ? table.getKey() : guessMainKey();
+		if (!FunctionalDependency.checkValid(dependencies, table.attributes()))
+			throw new IllegalArgumentException("Dependencies not valid.");
+		key = (table.key() != null) ? table.key() : guessMainKey();
+		dependencies.addFirst(new FunctionalDependency(key, table.attributes()));
 
 		Map<String, Set<String>> attributeKeyMap = new ConcurrentHashMap<>();
-		table.getAttributes().forEach(a -> attributeKeyMap.put(a, tableKey));
+		table.attributes().forEach(a -> attributeKeyMap.put(a, key));
 
 		ExecutorService exe = Executors.newCachedThreadPool();
-		table.getAttributes().forEach(attribute -> exe
-				.execute(() -> computeKey(attribute, attributeKeyMap)));
+		var dependencyMap = FunctionalDependency.closureMap(dependencies);
+		dependencyMap.forEach((k,v) -> v.removeAll(k));
+		attributeKeyMap.keySet()
+				.forEach(attribute -> exe.execute(() -> computeKey(attribute, dependencyMap, attributeKeyMap)));
 		exe.shutdown();
 		try {
 			exe.awaitTermination(2, TimeUnit.MINUTES);
@@ -49,11 +50,15 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 		return buildTables(attributeKeyMap);
 	}
 
+	private <T> Collection<T> sum(Collection<T> a, Collection<T> b) {
+		return Stream.concat(a.stream(), b.stream()).toList();
+	}
+	
 	/**
-	 * Generates a collection of tables from the attributeKeyMap. Once the map
-	 * is computed, it contains a non-transitive, non-partial key for each
-	 * attribute. Given that, a normal form is created by grouping each
-	 * attribute with its assigned key.
+	 * Generates a collection of tables from the attributeKeyMap. Once the map is
+	 * computed, it contains a non-transitive, non-partial key for each attribute.
+	 * Given that, a normal form is created by grouping each attribute with its
+	 * assigned key.
 	 * 
 	 * @param attributeKeyMap
 	 * @return
@@ -69,15 +74,25 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 				return a;
 			});
 		});
+		
+		//Cycle handling
+		var toDelete = new ArrayList<Set<String>>();
+		for (var i : finalMap.entrySet()) {
+			for (var j : finalMap.entrySet()){
+				if (!i.getKey().equals(j.getKey()) && sum(i.getKey(),i.getValue()).containsAll(sum(j.getKey(),j.getValue())))
+					toDelete.add(j.getKey());
+			}
+		}
+		toDelete.forEach(finalMap::remove);
 
 		List<Table> normalForm = new ArrayList<>();
 		finalMap.forEach((k, v) -> {
 			List<String> tableAttributes = new ArrayList<>(k);
 			tableAttributes.addAll(v);
-			if (normalForm.stream().noneMatch(
-					t -> t.getAttributes().containsAll(tableAttributes)))
-				normalForm.add(new Table(tableAttributes, k));
+			normalForm.add(new Table(tableAttributes, k));
 		});
+		if (normalForm.stream().noneMatch(t -> t.attributes().containsAll(key)))
+			normalForm.add(new Table(key, key));
 		this.table.fill(normalForm);
 		return normalForm;
 	}
@@ -90,15 +105,14 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 	 * @param dependencyMap
 	 * @param attributeKeyMap
 	 */
-	private void computeKey(String attribute,
+	private void computeKey(String attribute, Map<Set<String>, Set<String>> dependencyMap,
 			Map<String, Set<String>> attributeKeyMap) {
 		// List of all determiners which may determine the given attribute.
-		List<Set<String>> checklist = new ArrayList<>(dependencyMap.entrySet()
-				.stream().filter(e -> e.getValue().contains(attribute))
-				.map(Map.Entry::getKey).toList());
-
+		List<Set<String>> toCheck = new ArrayList<Set<String>>(dependencyMap.entrySet().stream().filter(e -> e.getValue().contains(attribute)).map(Map.Entry::getKey).toList());
+		List<Set<String>> checklist = new ArrayList<>();
 		List<Set<String>> checked = new ArrayList<>();
 		Set<String> tmpKey = attributeKeyMap.get(attribute);
+		checklist.addAll(toCheck);
 		checked.add(tmpKey);
 
 		do {
@@ -106,10 +120,16 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 			checked.clear();
 			for (var k : checklist)
 				// Checks if keyOf(attribute) -> attribute might be a
-				// partial or
+				// partial dependency, and replaces it if so.
+				if (tmpKey.containsAll(k)) {
+					attributeKeyMap.put(attribute, k);
+					tmpKey = k;
+					checked.add(k);
+				}
+			for (var k : checklist)
+				// Checks if keyOf(attribute) -> attribute might be a
 				// transitive dependency, and replaces it if so.
-				if (tmpKey.containsAll(k) || dependencyMap
-						.getOrDefault(tmpKey, new HashSet<>()).containsAll(k)) {
+				if (dependencyMap.get(tmpKey).containsAll(k)) {
 					attributeKeyMap.put(attribute, k);
 					tmpKey = k;
 					checked.add(k);
@@ -123,19 +143,18 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 	 * @return
 	 */
 	private Set<String> guessMainKey() {
-		var key = new ConcurrentSkipListSet<>(table.getAttributes());
+		var key = new ConcurrentSkipListSet<>(table.attributes());
 		for (String s : key)
-			if (FunctionalDependency.cover(dependencies,setDiff(key, List.of(s))).containsAll(table.getAttributes()))
+			if (FunctionalDependency.closure(dependencies, setDiff(key, List.of(s))).containsAll(table.attributes()))
 				key.remove(s);
 		return key;
 	}
 
 	/**
-	 * A utility function that returns a collection that contains the set
-	 * difference between the other two collections.
+	 * A utility function that returns a collection that contains the set difference
+	 * between the other two collections.
 	 * 
-	 * @param <T>
-	 *            The type of Object within the Collections.
+	 * @param <T> The type of Object within the Collections.
 	 * @return
 	 */
 	private static <T> Collection<T> setDiff(Collection<T> a, Collection<T> b) {

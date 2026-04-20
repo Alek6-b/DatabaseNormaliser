@@ -7,9 +7,9 @@ import java.io.InputStreamReader;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-public class DelimiterExtractor {
+public abstract class DelimiterExtractor {
 	/**
-	 * Guesses the CSV file's delimiter.
+	 * Guesses a CSV file's delimiter.
 	 * 
 	 * @param csvStream : An input stream tied to the CSV file.
 	 * @return The delimiter string.

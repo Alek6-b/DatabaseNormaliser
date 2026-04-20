@@ -16,11 +16,18 @@ import it.unisa.databaseNormaliser.*;
  * 
  */
 @ParameterizedClass
-@CsvSource({"ABCDEFG, BC->D, D->EF, A->B, AB->CD, B->C, C->A",
-		"ABCD, D->ACD, BC->D", "ABCDEFGH, A->BC, D->EF, G->AD, DE->F",
-		"ABCDE,A->BCDE, D->E, B->C, C->D", "ABCDE,A->BCD, B->C"})
+@CsvSource({
+	"ABCDE, A->BCDE, C->DE",
+	"ABCDE, D->E, A->BCDE, C->D, B->C",
+	"ABCDEF, BC->D, D->EF, A->B, AB->CD, B->C",
+	"ABCDEF, BC->D, D->EF, A->BCD, B->C, C->A",
+	"ABCD, D->ACD, BC->D, X->Z",
+	"ABCDE, A->BCD, B->C",
+	"ABCDEFG, A->BC, D->EF, G->AD, DE->F",
+	"ABCDEF, D->E, A->BCD, C->D, B->C",
+	})
 
-record QuickTest(String attributes,
+record LetterSchemaTest(String attributes,
 		@AggregateWith(Util.VarargsStringAggregator.class) String... dependencies) {
 	/**
 	 * @throws java.lang.Exception
@@ -43,8 +50,8 @@ record QuickTest(String attributes,
 		try {
 			new AttributeKeyNormaliser(db,d).normalise()
 					.forEach((t) -> System.out.println("%s with key: %s"
-							.formatted(t.getAttributes().toString(),
-									t.getKey().toString())));
+							.formatted(t.attributes().toString(),
+									t.key().toString())));
 		} catch (IllegalArgumentException e) {
 			System.err.println(e.getMessage());
 		}
