@@ -17,13 +17,13 @@ class CSVTest {
 	final String TEST_RESOURCE_PATH = "src/test/resources/";
 
 	@ParameterizedTest
-	@CsvSource({"disoccupazione.csv,disoccupazione_results.txt"})
-	void test(String csv, String dependencies)
+	@CsvSource({"disoccupazione","coke","creditclient","restaurant","titanic"})
+	void test(String testCase)
 			throws FileNotFoundException, IOException {
-		System.out.println("Testing " + csv + "...");
+		System.out.println("Testing " + testCase + "...");
 		File csvFile, depFile;
-		csvFile = new File(TEST_RESOURCE_PATH + csv);
-		depFile = new File(TEST_RESOURCE_PATH + dependencies);
+		csvFile = new File(TEST_RESOURCE_PATH + testCase +".csv");
+		depFile = new File(TEST_RESOURCE_PATH + testCase+"_results.txt");
 
 		CSVParser p = CSVParser.parse(csvFile, null, CSVFormat.DEFAULT.builder()
 				.setDelimiter(
