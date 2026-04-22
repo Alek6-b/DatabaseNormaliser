@@ -17,7 +17,7 @@ class CSVTest {
 	final String TEST_RESOURCE_PATH = "src/test/resources/";
 
 	@ParameterizedTest
-	@CsvSource({"disoccupazione","coke","creditclient","restaurant","titanic"})
+	@CsvSource({"disoccupazione","coke","coke2","creditclient","restaurant","titanic"})
 	void test(String testCase)
 			throws FileNotFoundException, IOException {
 		System.out.println("Testing " + testCase + "...");

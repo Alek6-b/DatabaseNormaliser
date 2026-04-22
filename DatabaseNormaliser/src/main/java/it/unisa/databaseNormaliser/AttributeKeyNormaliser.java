@@ -3,6 +3,7 @@ package it.unisa.databaseNormaliser;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -92,7 +93,10 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 		List<Table> normalForm = new ArrayList<>();
 		finalMap.forEach((k, v) -> {
 			List<String> tableAttributes = new ArrayList<>(k);
-			tableAttributes.addAll(v);
+			tableAttributes.sort(Comparator.comparingInt(table.attributes()::indexOf));
+			List<String> a = new ArrayList<>(v);
+			a.sort(Comparator.comparingInt(table.attributes()::indexOf));
+			tableAttributes.addAll(a);
 			normalForm.add(new Table(tableAttributes, k));
 		});
 		if (normalForm.stream().noneMatch(t -> t.attributes().containsAll(key)))
@@ -139,11 +143,13 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 	 * @return
 	 */
 	private Set<String> guessMainKey() {
-		var key = new ConcurrentSkipListSet<>(table.attributes());
-		for (String s : key)
-			if (FunctionalDependency.closure(dependencies, setDiff(key, List.of(s))).containsAll(table.attributes()))
-				key.remove(s);
-		return key;
+		var key = new ArrayList<>(table.attributes());
+		var i = key.iterator();
+		while(i.hasNext()) {
+			if (FunctionalDependency.closure(dependencies, setDiff(key, List.of(i.next()))).containsAll(table.attributes()))
+				i.remove();
+		}
+		return new LinkedHashSet<>(key);
 	}
 
 	/**
