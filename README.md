@@ -1,0 +1,2 @@
+Thesis project for the three-year IT course at the University of Salerno. A library designed for the development and implementation of algorithms for the normalization of databases and database schemas.
+To extend the project, create a new class extending AbstractSingleTableNormaliser or AbstractMultiTableNormaliser, pass all necessary data via a custom construcor, and implement the method normalise().
