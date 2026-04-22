@@ -6,7 +6,7 @@ import org.junit.jupiter.params.aggregator.*;
 
 public class Util {
 
-	static public List<String> attributeParse(String s) {
+	static public List<String> letterAttributeParse(String s) {
 		return s.chars().mapToObj((c) -> String.valueOf((char) c)).toList();
 		
 	}

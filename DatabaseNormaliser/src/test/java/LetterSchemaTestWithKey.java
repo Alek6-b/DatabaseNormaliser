@@ -1,7 +1,9 @@
-/**
- * 
- */
-import java.util.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -11,25 +13,17 @@ import org.junit.jupiter.params.aggregator.ArgumentsAggregationException;
 import org.junit.jupiter.params.aggregator.ArgumentsAggregator;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import it.unisa.databaseNormaliser.*;
+import it.unisa.databaseNormaliser.AttributeKeyNormaliser;
+import it.unisa.databaseNormaliser.FunctionalDependency;
+import it.unisa.databaseNormaliser.Table;
 
-
-/**
- * A simple test class that takes CSV strings as inputs, where each letter
- * corresponds to an attribute.
- * 
- */
 @ParameterizedClass
 @CsvSource({
-	"ABCDE, A->BCDE, C->DE",
-	"ABCDE, D->E, A->BCDE, C->D, B->C",
-	"ABCDEF, BC->D, D->EF, A->B, AB->CD, B->C",
-	"ABCDEF, BC->D, D->EF, A->BCD, B->C, C->A",
-	"ABCD, D->ACD, BC->D, X->Z",
-	"ABCDE, A->BCD, B->C",
+	"ABCDE, A, A->BCD, B->C",
+	"ABCDE, AE, A->BCD, B->C",
 	})
 
-record LetterSchemaTest(String attributes,
+record LetterSchemaTestWithKey(String attributes, String key,
 		@AggregateWith(Aggregator.class) String... dependencies) {
 	/**
 	 * @throws java.lang.Exception
@@ -38,17 +32,18 @@ record LetterSchemaTest(String attributes,
 		public String[] aggregateArguments(ArgumentsAccessor arg0, ParameterContext arg1)
 				throws ArgumentsAggregationException {
 			List<String> l = new ArrayList<String>();
-			for (int i = 1; i < arg0.size(); i++)
+			for (int i = 2; i < arg0.size(); i++)
 				l.add(arg0.getString(i));
 			return l.toArray(String[]::new);
 		}
 	}
+	
 	@RepeatedTest(1)
-	void testWithArgumentsAccessor() {
-		System.out.println(
-				String.format("Testing with attributes: %s", attributes));
+		void test(){
+		System.out.println(String.format("Testing with attributes: %s", attributes));
+		System.out.println(String.format("Key: %s", key));
 
-		var db = new Table(Util.letterAttributeParse(attributes));
+		var db = new Table(Util.letterAttributeParse(attributes),Util.letterAttributeParse(key));
 
 		List<FunctionalDependency> d = Arrays.stream(dependencies).map((s) -> {
 			System.out.print("Adding dependency:" + s + "\n");

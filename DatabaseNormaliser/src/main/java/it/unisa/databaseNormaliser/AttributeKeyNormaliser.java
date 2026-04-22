@@ -29,7 +29,11 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 	public List<Table> normalise() {
 		if (!FunctionalDependency.checkValid(dependencies, table.attributes()))
 			throw new IllegalArgumentException("Dependencies not valid.");
-		key = (table.key() != null) ? table.key() : guessMainKey();
+		if(table.key() == null)
+			key = guessMainKey();
+		else if (!FunctionalDependency.closure(dependencies,table.key()).containsAll(table.attributes()))
+			throw new IllegalArgumentException("Key not valid.");
+		else key = table.key();
 		dependencies.addFirst(new FunctionalDependency(key, table.attributes()));
 
 		Map<String, Set<String>> attributeKeyMap = new ConcurrentHashMap<>();
@@ -120,16 +124,8 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 			checked.clear();
 			for (var k : checklist)
 				// Checks if keyOf(attribute) -> attribute might be a
-				// partial dependency, and replaces it if so.
-				if (tmpKey.containsAll(k)) {
-					attributeKeyMap.put(attribute, k);
-					tmpKey = k;
-					checked.add(k);
-				}
-			for (var k : checklist)
-				// Checks if keyOf(attribute) -> attribute might be a
-				// transitive dependency, and replaces it if so.
-				if (dependencyMap.get(tmpKey).containsAll(k)) {
+				// partial or transitive dependency, and replaces it if so.
+				if (tmpKey.containsAll(k) || dependencyMap.get(tmpKey).containsAll(k)) {
 					attributeKeyMap.put(attribute, k);
 					tmpKey = k;
 					checked.add(k);
