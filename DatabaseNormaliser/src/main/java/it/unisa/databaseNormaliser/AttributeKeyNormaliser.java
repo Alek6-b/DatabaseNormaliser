@@ -101,7 +101,7 @@ public class AttributeKeyNormaliser extends AbstractSingleTableNormaliser {
 		});
 		if (normalForm.stream().noneMatch(t -> t.attributes().containsAll(key)))
 			normalForm.add(new Table(key, key));
-		this.table.fill(normalForm);
+		this.table.fillSubtables(normalForm);
 		return normalForm;
 	}
 
