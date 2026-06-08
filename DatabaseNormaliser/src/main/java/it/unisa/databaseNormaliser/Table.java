@@ -24,12 +24,15 @@ public record Table(List<String> attributes, Set<String> key, List<List<? extend
 
 	void fillSubtables(List<Table> derivedTables) {
 		derivedTables.forEach((t) -> {
+			LinkedHashSet<List<Serializable>> tmp = new LinkedHashSet<List<Serializable>>();
 			this.entries.forEach((r) -> {
 				List<Serializable> newEntry = new ArrayList<Serializable>();
 				t.attributes().forEach(
 						(a) -> newEntry.add(r.get(attributes.indexOf(a))));
-				t.addEntry(newEntry);
+				if (!tmp.contains(newEntry))
+					tmp.add(newEntry);
 			});
+			tmp.forEach(t::addEntry);
 		});
 	}
 }
